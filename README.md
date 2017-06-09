@@ -1,14 +1,14 @@
-#Outstanding Online Poll Service(OOPS) API
+# Outstanding Online Poll Service(OOPS) API
 This is backend for online poll service. Its RESTful api created with [Spring Boot](https://projects.spring.io/spring-boot/). 
-##Basics
+## Basics
 * All requests and responses are in JSON format.
 * Dates using ISO 8601. Date format: "yyyy-mm-ddThh:mm:ssZ" 
 
 Base url:
 >http://host/api 
-##List polls
+## List polls
 `GET /polls`
-####Parameters
+#### Parameters
 |Name|Type|Description|
 |-|-|-|
 |tags|string[]|List polls marked by certain tags|
@@ -19,7 +19,7 @@ Base url:
 |per_page|int|Objects returned per one page|
 |sort|string|List polls sorted  **+(-)votes,date**|
 
-####Response
+#### Response
 ~~~
 Status: 200 OK
 ~~~
@@ -31,15 +31,15 @@ Status: 200 OK
  	}]
  }
 ~~~
-##Create poll
+## Create poll
 `POST /polls`
-####Input
+#### Input
 |Name|Type|Description|
 |-|-|-|
 |name|string|**Required**. Name of the poll|
 |options|string[]|**Required. Should contain at least 2 options.** Poll's options|
   
-####Response
+#### Response
 ~~~
 Status: 201 CREATED
 Location: uri
@@ -52,7 +52,7 @@ Location: uri
 
 ## Show poll
 `GET /polls/:id`
-####Response
+#### Response
 ~~~
 Status: 200 OK
 ~~~
@@ -74,15 +74,15 @@ Status: 200 OK
  #structure may change
 ~~~
 
-##Voting
+## Voting
 `PUT /polls/{id}/vote`
-####Input
+#### Input
 |Name|Type|Description|
 |-|-|-|
 |poll_id|long|**Required**. Id of poll|
 |options|string[]|**Required. Should contain only one option if multioptions disabled for poll** Poll's options|
 
-####Response
+#### Response
 ~~~
 Status: 200 OK
 ~~~
