@@ -1,5 +1,12 @@
 # Outstanding Online Poll Service(OOPS) API
 This is backend for online poll service. Its RESTful api created with [Spring Boot](https://projects.spring.io/spring-boot/). 
+
+* [Basics](#basics)
+* [List polls](#list-polls)
+* [Create Poll](#create-poll)
+* [Show Poll](#show-poll)
+* [Voting](#voting)
+
 ## Basics
 * All requests and responses are in JSON format.
 * Dates using ISO 8601. Date format: "yyyy-mm-ddThh:mm:ssZ" 
@@ -10,7 +17,7 @@ Base url:
 `GET /polls`
 #### Parameters
 |Name|Type|Description|
-|-|-|-|
+|----|----|-----------|
 |tags|string[]|List polls marked by certain tags|
 |state|string|List only **closed** or **open** polls|
 |start|string|List polls created after given date|
@@ -35,7 +42,7 @@ Status: 200 OK
 `POST /polls`
 #### Input
 |Name|Type|Description|
-|-|-|-|
+|----|----|-----------|
 |name|string|**Required**. Name of the poll|
 |options|string[]|**Required. Should contain at least 2 options.** Poll's options|
   
@@ -78,7 +85,7 @@ Status: 200 OK
 `PUT /polls/{id}/vote`
 #### Input
 |Name|Type|Description|
-|-|-|-|
+|----|----|-----------|
 |poll_id|long|**Required**. Id of poll|
 |options|string[]|**Required. Should contain only one option if multioptions disabled for poll** Poll's options|
 
