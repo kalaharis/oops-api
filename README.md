@@ -6,6 +6,8 @@ This is backend for online poll service. Its RESTful api created with [Spring Bo
 * [Create Poll](#create-poll)
 * [Show Poll](#show-poll)
 * [Voting](#voting)
+* [Paging](#paging)
+* [Sorting](#sorting)
 
 ## Basics
 * All requests and responses are in JSON format.
@@ -19,12 +21,9 @@ Base url:
 |Name|Type|Description|
 |----|----|-----------|
 |tags|string[]|List polls marked by certain tags|
-|state|string|List only **closed** or **open** polls|
+|state|string|List only `closed` or `open` polls|
 |start|string|List polls created after given date|
 |end|string|List polls created before given date|
-|page|int|Page of listed polls|
-|per_page|int|Objects returned per one page|
-|sort|string|List polls sorted  **+(-)votes,date**|
 
 #### Response
 ~~~
@@ -70,6 +69,7 @@ Status: 200 OK
  	"create_date": "yyyy-mm-ddThh:mm:ssZ",
  	"expire_date": "yyyy-mm-ddThh:mm:ssZ",
  	"tags": string[],
+ 	"total_votes": int,
  	"multioptions": boolean,
  	"state": string,
  	"options": [
@@ -96,3 +96,12 @@ Status: 200 OK
 ~~~
 #here will be poll when its final structure decided
 ~~~
+## Paging and Sorting
+### Paging
+To page content you should use parameters `page` and `size`.
+##### Example
+`GET /polls?page=1&size=5`
+### Sorting
+To sort content you should use parameter `sort` with field name and order `desc` or `asc`.
+##### Example 
+`GET /polls?sort=id,desc`
