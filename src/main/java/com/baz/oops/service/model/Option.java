@@ -28,8 +28,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@ToString(exclude = {"id"})
-@JsonIgnoreProperties({"id"})
+@ToString(exclude = {"id","poll"})
+@JsonIgnoreProperties({"id","poll"})
 @Entity
 @Table(name = "options")
 public class Option {
@@ -43,6 +43,9 @@ public class Option {
 
     @Column(name = "votes_count")
     private int votesCount;
+
+    @ManyToOne
+    private Poll poll;
 
     public Option(String name) {
         this.name = name;

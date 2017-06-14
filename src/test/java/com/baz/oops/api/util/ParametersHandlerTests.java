@@ -2,62 +2,66 @@ package com.baz.oops.api.util;
 
 import com.baz.oops.api.exceptions.BadRequestParamException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by arahis on 6/13/17.
  */
 public class ParametersHandlerTests {
 
-    @Test(expected = BadRequestParamException.class)
-    public void checkTags_NotEnoughTags_ExceptionThrown() throws BadRequestParamException {
-        String[] tags = {"one"};
-        ParametersHandler.checkTags(tags);
+    @Test
+    public void checkTags_NotEnoughTags_ReturnsFalse() {
+        List<String> tags = new ArrayList<>();
+        tags.add("one");
+        Assert.assertFalse(ParametersHandler.isTagsValid(tags));
     }
 
     @Test
-    public void checkTags_EnoughTags_NoExceptionThrown() throws BadRequestParamException {
-        String[] tags = {"one", "two"};
-        ParametersHandler.checkTags(tags);
+    public void checkTags_EnoughTags_ReturnsTrue() {
+        List<String> tags = new ArrayList<>();
+        tags.add("one");
+        tags.add("two");
+        Assert.assertTrue(ParametersHandler.isTagsValid(tags));
     }
 
     @Test
-    public void checkState_ValidStateLowerCase_NoExceptionThrown() throws BadRequestParamException {
+    public void checkState_ValidStateLowerCase_ReturnTrue() {
         String state = "open";
-        ParametersHandler.checkState(state);
+        Assert.assertTrue(ParametersHandler.isStateValid(state));
     }
 
     @Test
-    public void checkState_ValidStateUpperCase_NoExceptionThrown() throws BadRequestParamException {
+    public void checkState_ValidStateUpperCase_ReturnsTrue() {
         String state = "OPEN";
-        ParametersHandler.checkState(state);
-    }
-
-    @Test(expected = BadRequestParamException.class)
-    public void checkState_NotValidState_ExceptionThrown() throws BadRequestParamException {
-        String state = "meow";
-        ParametersHandler.checkState(state);
+        Assert.assertTrue(ParametersHandler.isStateValid(state));
     }
 
     @Test
-    public void checkDateFormat_ValidDateFormat_NoExceptionThrown() throws BadRequestParamException {
+    public void checkState_NotValidState_ReturnsFalse() {
+        String state = "meow";
+        Assert.assertFalse(ParametersHandler.isStateValid(state));
+    }
+
+    @Test
+    public void checkDateFormat_ValidDateFormat_ReturnsTrue() {
         String date = "2017-06-21T06:34:00Z";
-        ParametersHandler.checkDateFormat(date);
+        Assert.assertTrue(ParametersHandler.isDateValid(date));
 
     }
 
-    @Test(expected = BadRequestParamException.class)
-    public void checkDateFormat_NotValidDateFormat_ExceptionThrown() throws BadRequestParamException {
+    @Test
+    public void checkDateFormat_NotValidDateFormat_ReturnsFalse() {
         String date = "2017-JUN-22";
-        ParametersHandler.checkDateFormat(date);
+        Assert.assertFalse(ParametersHandler.isDateValid(date));
     }
 
-    @Test(expected = BadRequestParamException.class)
-    public void checkDateFormat_ValidDateFormatAndNotValidDate_NoExceptionThrown()
-            throws BadRequestParamException {
+    @Test
+    public void checkDateFormat_ValidDateFormatAndNotValidDate_ReturnsFalse() {
         String date = "2017-54-54T25:34:00Z";
-        ParametersHandler.checkDateFormat(date);
+        Assert.assertFalse(ParametersHandler.isDateValid(date));
     }
 }

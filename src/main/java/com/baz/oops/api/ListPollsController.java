@@ -1,7 +1,9 @@
 package com.baz.oops.api;
 
 import com.baz.oops.api.JSON.CreatePollRequest;
+import com.baz.oops.api.JSON.PollListResponse;
 import com.baz.oops.api.exceptions.BadRequestParamException;
+import com.baz.oops.api.filters.PollsFiler;
 import com.baz.oops.api.util.ParametersHandler;
 import com.baz.oops.persistence.PollsRepository;
 import com.baz.oops.service.PollService;
@@ -48,56 +50,9 @@ public class ListPollsController {
         this.pollService = pollService;
     }
 
-
-    //TODO: remove
-    @PostConstruct
-    private void init() {
-        for (int i = 0; i < 5; i++) {
-            Poll poll = new Poll("test" + i, new Date(), State.OPEN);
-            List<Option> options = new ArrayList<>();
-
-            for (int j = 0; j < 3; j++) {
-                Option option = new Option("test options" + i);
-                options.add(option);
-            }
-
-            List<String> tags = new ArrayList<>();
-            tags.add("tag" + i);
-            tags.add(i + "tag");
-
-            poll.setTags(tags);
-            poll.setTotalVotes(i);
-            poll.setOptions(options);
-
-            pollsRepository.save(poll);
-        }
-    }
-    //
-
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity listPolls(Pageable pageable,
-                                    @RequestParam(value = "tags", required = false) String[] tags,
-                                    @RequestParam(value = "state", required = false) String state,
-                                    @RequestParam(value = "start", required = false) String start,
-                                    @RequestParam(value = "end", required = false) String end) {
-        try {
-            if (tags != null) {
-                ParametersHandler.checkTags(tags);
-            }
-            if (state != null) {
-                ParametersHandler.checkState(state);
-            }
-            if (start != null) {
-                ParametersHandler.checkDateFormat(start);
-            }
-            if (end != null) {
-                ParametersHandler.checkDateFormat(end);
-            }
-        } catch (BadRequestParamException ex) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
-
-        Page<Poll> polls = pollService.listAllByPage(pageable);
+    public ResponseEntity listPolls(Pageable pageable, PollsFiler filter) {
+        Page<Poll> polls = pollService.listAllByPage(pageable, filter);
         return new ResponseEntity(polls, HttpStatus.OK);
     }
 

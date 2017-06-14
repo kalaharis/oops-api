@@ -7,6 +7,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,23 +18,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ParametersHandler {
 
-    public static void checkTags(String[] tags) throws BadRequestParamException {
-        if (tags.length < 2) {
-            throw new BadRequestParamException();
+    public static boolean isTagsValid(List<String> tags) {
+        if (tags == null || tags.size() < 2) {
+            return false;
         }
+        return true;
     }
 
-    public static void checkState(String state) throws BadRequestParamException {
+    public static boolean isStateValid(String state) {
         try {
             State.valueOf(state.toUpperCase());
         } catch (IllegalArgumentException | NullPointerException ex) {
-            throw new BadRequestParamException();
+            return false;
         }
+        return true;
     }
 
-    public static Date checkDateFormat(String date) throws BadRequestParamException {
+    public static boolean isDateValid(String date) {
         Date d = null;
-        log.debug("input: "+ date);
+        log.debug("input: " + date);
         try {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssXXX");
             df.setTimeZone(TimeZone.getTimeZone("UTC+00:00"));
@@ -42,10 +45,10 @@ public class ParametersHandler {
             if (d == null) {
                 throw new NullPointerException();
             }
-            log.debug("output: "+ df.format(d));
+            log.debug("output: " + df.format(d));
         } catch (NullPointerException | ParseException ex) {
-            throw new BadRequestParamException();
+            return false;
         }
-        return d;
+        return true;
     }
 }

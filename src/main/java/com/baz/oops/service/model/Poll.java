@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -58,7 +60,7 @@ public class Poll {
 
     @Column(name = "tags")
     @ElementCollection(targetClass = String.class)
-    private List<String> tags;
+    private Set<String> tags;
 
     @Column(name = "multi_options")
     private boolean multiOptions;
@@ -70,16 +72,26 @@ public class Poll {
     @Enumerated(EnumType.STRING)
     private State state;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "poll_id")
+    @Setter(AccessLevel.PRIVATE)
+    @OneToMany(mappedBy = "poll", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Option> options;
+    private List<Option> options = new ArrayList<>();
 
-    public Poll(String name, Date createDate, State state) {
-        this.name = name;
-        this.createDate = createDate;
-        this.state = state;
-        this.options = options;
+    public void addOption(Option option) {
+        option.setPoll(this);
+        this.options.add(option);
     }
 
+    public void addOptions(List<Option> options) {
+        for (Option option : options) {
+            option.setPoll(this);
+            this.options.add(option);
+        }
+    }
+
+    public Poll(String name) {
+        this.name = name;
+        this.createDate = new Date();
+        this.state = State.OPEN;
+    }
 }
