@@ -45,6 +45,7 @@ public class Option {
     private int votesCount;
 
     @ManyToOne
+    @JsonBackReference
     private Poll poll;
 
     public Option(String name) {

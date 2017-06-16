@@ -14,17 +14,19 @@ import java.util.List;
 public class ParametersHandlerTests {
 
     @Test
-    public void checkTags_NotEnoughTags_ReturnsFalse() {
+    public void checkTags_OneTag_ReturnsTrue() {
         List<String> tags = new ArrayList<>();
         tags.add("one");
-        Assert.assertFalse(ParametersHandler.isTagsValid(tags));
+        Assert.assertTrue(ParametersHandler.isTagsValid(tags));
     }
 
     @Test
-    public void checkTags_EnoughTags_ReturnsTrue() {
+    public void checkTags_MultipleTags_ReturnsTrue() {
         List<String> tags = new ArrayList<>();
         tags.add("one");
         tags.add("two");
+        tags.add("three");
+        tags.add("four");
         Assert.assertTrue(ParametersHandler.isTagsValid(tags));
     }
 

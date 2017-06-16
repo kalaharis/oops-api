@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ParametersHandler {
 
     public static boolean isTagsValid(List<String> tags) {
-        if (tags == null || tags.size() < 2) {
+        if (tags == null) {
             return false;
         }
         return true;

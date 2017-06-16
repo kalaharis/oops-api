@@ -1,19 +1,16 @@
 package com.baz.oops.service.impl;
 
-import com.baz.oops.api.filters.PollsFiler;
+import com.baz.oops.api.spring.PollsFiler;
 import com.baz.oops.persistence.PollsRepository;
 import com.baz.oops.service.PollService;
-import com.baz.oops.service.enums.State;
 import com.baz.oops.service.model.Option;
 import com.baz.oops.service.model.Poll;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 
 /**
