@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ParametersHandler {
 
-    public static boolean isTagsValid(List<String> tags) {
+    public static boolean isTagsValid(Set<String> tags) {
         if (tags == null) {
             return false;
         }
@@ -34,21 +35,44 @@ public class ParametersHandler {
         return true;
     }
 
+    public static State getStateFromString(String state) {
+        try {
+            return State.valueOf(state.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            return null;
+        }
+    }
+
     public static boolean isDateValid(String date) {
-        Date d = null;
+        Date javaDate = null;
         log.debug("input: " + date);
         try {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssXXX");
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
             df.setTimeZone(TimeZone.getTimeZone("UTC+00:00"));
             df.setLenient(false);
-            d = df.parse(date);
-            if (d == null) {
+            javaDate = df.parse(date);
+            if (javaDate == null) {
                 throw new NullPointerException();
             }
-            log.debug("output: " + df.format(d));
+            log.debug("output: " + df.format(javaDate));
         } catch (NullPointerException | ParseException ex) {
             return false;
         }
         return true;
+    }
+
+    public static Date getDateFromString(String date) {
+        Date javaDate = null;
+        log.debug("input: " + date);
+        try {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+            df.setTimeZone(TimeZone.getTimeZone("UTC+00:00"));
+            df.setLenient(false);
+            javaDate = df.parse(date);
+            log.debug("output: " + df.format(javaDate));
+        } catch (NullPointerException | ParseException ex) {
+            return null;
+        }
+        return javaDate;
     }
 }

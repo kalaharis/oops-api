@@ -7,14 +7,16 @@ import com.baz.oops.service.model.Poll;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.persistence.criteria.SetJoin;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -28,8 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 public class PollsFiler implements Specification<Poll> {
 
-    private List<String> tags;
-    private State state;
+    private Set<String> tags;
+    private String state;
     private String start;
     private String end;
 
@@ -39,20 +41,30 @@ public class PollsFiler implements Specification<Poll> {
         ArrayList<Predicate> predicates = new ArrayList<>();
 
         if (ParametersHandler.isTagsValid(tags)) {
-            log.info("tags: " + tags.toString());
-            SetJoin transactions = root.joinSet("tags");
-            Expression<String> expression = transactions.get("name");
-            predicates.add(criteriaBuilder.like(expression, tags.get(0)));
+            log.debug("tags: " + tags.toString());
+            Expression<Collection<String>> tagsIds = root.get("tags");
+            Iterator<String> it = tags.iterator();
+            while (it.hasNext()) {
+                predicates.add(criteriaBuilder.isMember(it.next(), tagsIds));
+            }
         }
-        if (state != null) {
-            predicates.add(criteriaBuilder.equal(root.get("state"), state));
+
+        State pollState = ParametersHandler.getStateFromString(state);
+        if (pollState != null) {
+            log.debug("state string: " + state);
+            log.debug("state: " + pollState);
+            predicates.add(criteriaBuilder.equal(root.get("state"), pollState));
         }
-        /*if (ParametersHandler.isDateValid(start)) {
-            predicates.add(criteriaBuilder.equal(root.get("start"), start));
-        }*/
-        /*if (ParametersHandler.isDateValid(end)) {
-            predicates.add(criteriaBuilder.equal(root.get("end"), end));
-        }*/
+
+        Date startDate = ParametersHandler.getDateFromString(start);
+        if (startDate != null) {
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createDate"), startDate));
+        }
+
+        Date endDate = ParametersHandler.getDateFromString(end);
+        if (endDate != null) {
+            predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
+        }
 
         return predicates.size() <= 0 ? null :
                 criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
