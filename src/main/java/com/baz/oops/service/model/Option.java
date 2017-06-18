@@ -17,6 +17,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,8 +29,9 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@ToString(exclude = {"id","poll"})
-@JsonIgnoreProperties({"id","poll"})
+@ToString(exclude = {"id", "poll"})
+@EqualsAndHashCode(exclude = {"id", "poll"})
+@JsonIgnoreProperties({"id", "poll"})
 @Entity
 @Table(name = "options")
 public class Option {
