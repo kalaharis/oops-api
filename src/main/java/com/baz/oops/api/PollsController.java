@@ -1,23 +1,17 @@
 package com.baz.oops.api;
 
 import com.baz.oops.api.JSON.CreatePollRequest;
-import com.baz.oops.api.spring.PollsFiler;
+import com.baz.oops.api.spring.PollsFilter;
 import com.baz.oops.persistence.PollsRepository;
 import com.baz.oops.service.PollService;
 import com.baz.oops.service.model.Option;
 import com.baz.oops.service.model.Poll;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
-import javax.ws.rs.Produces;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping(value = "/polls")
-public class ListPollsController {
+public class PollsController {
 
     private PollService pollService;
 
@@ -44,12 +36,12 @@ public class ListPollsController {
     private PollsRepository pollsRepository; //TODO: remove
 
     @Autowired
-    public ListPollsController(PollService pollService) {
+    public PollsController(PollService pollService) {
         this.pollService = pollService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity listPolls(Pageable pageable, PollsFiler filter) {
+    public ResponseEntity listPolls(Pageable pageable, PollsFilter filter) {
         Page<Poll> polls = pollService.listAllByPage(pageable, filter);
         return new ResponseEntity(polls, HttpStatus.OK);
     }
@@ -65,6 +57,9 @@ public class ListPollsController {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
         Poll poll = pollService.createPoll(name, options);
+        if (poll == null) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         return new ResponseEntity(poll, HttpStatus.CREATED);
     }
 
@@ -73,7 +68,31 @@ public class ListPollsController {
         if (id <= 0) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
+
         Poll poll = pollService.getById(id);
+        if (poll == null) {
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity(poll, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/{id}/options/{indx}/vote", method = RequestMethod.PUT)
+    public ResponseEntity vote(@PathVariable("id") long id,
+                               @PathVariable("indx") int optionIndx) {
+        if (id <= 0) {
+            log.warn("negative id in path");
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+        if (optionIndx < 0) {
+            log.warn("negative option index in path");
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+        Poll poll = pollService.vote(id, optionIndx);
+        if (poll == null) {
+            log.warn("poll or poll's option not found");
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity(poll, HttpStatus.OK);
     }
 

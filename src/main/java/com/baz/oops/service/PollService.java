@@ -1,6 +1,6 @@
 package com.baz.oops.service;
 
-import com.baz.oops.api.spring.PollsFiler;
+import com.baz.oops.api.spring.PollsFilter;
 import com.baz.oops.service.model.Option;
 import com.baz.oops.service.model.Poll;
 
@@ -14,9 +14,11 @@ import java.util.List;
  */
 public interface PollService {
 
-    Page<Poll> listAllByPage(Pageable pageable, PollsFiler filter);
+    Page<Poll> listAllByPage(Pageable pageable, PollsFilter filter);
 
     Poll createPoll(String name, List<Option> options);
 
     Poll getById(long id);
+
+    Poll vote(long id, int optionIndx);
 }

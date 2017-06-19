@@ -1,4 +1,4 @@
-package com.baz.oops.api;
+package com.baz.oops.api.functional;
 
 import com.baz.oops.api.spring.ResponsePage;
 import com.baz.oops.persistence.PollsRepository;
@@ -111,7 +111,7 @@ public class ListPollsApiTests {
                 new ParameterizedTypeReference<ResponsePage<Poll>>() {
                 });
 
-        Assert.assertTrue(response.getStatusCode() == HttpStatus.OK);
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertNotNull(response.getBody());
     }
 

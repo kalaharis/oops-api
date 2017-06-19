@@ -53,4 +53,8 @@ public class Option {
     public Option(String name) {
         this.name = name;
     }
+
+    public void vote() {
+        this.votesCount++;
+    }
 }

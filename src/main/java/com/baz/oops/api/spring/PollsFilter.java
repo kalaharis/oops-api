@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Setter
-public class PollsFiler implements Specification<Poll> {
+public class PollsFilter implements Specification<Poll> {
 
     private Set<String> tags;
     private String state;

@@ -1,6 +1,6 @@
 package com.baz.oops.service.impl;
 
-import com.baz.oops.api.spring.PollsFiler;
+import com.baz.oops.api.spring.PollsFilter;
 import com.baz.oops.persistence.PollsRepository;
 import com.baz.oops.service.PollService;
 import com.baz.oops.service.model.Option;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class PollServiceImpl implements PollService {
     }
 
     @Override
-    public Page<Poll> listAllByPage(Pageable pageable, PollsFiler filter) {
+    public Page<Poll> listAllByPage(Pageable pageable, PollsFilter filter) {
         return pollsRepository.findAll(filter, pageable);
     }
 
@@ -43,5 +44,21 @@ public class PollServiceImpl implements PollService {
     public Poll getById(long id) {
         Poll poll = pollsRepository.findOne(id);
         return poll;
+    }
+
+    @Override
+    @Transactional
+    public Poll vote(long id, int optionIndx) {
+        Poll poll = pollsRepository.findOne(id);
+        if (poll == null) {
+            return null;
+        }
+        try {
+            poll.getOptions().get(optionIndx).vote();
+        } catch (IndexOutOfBoundsException ex) {
+            return null;
+        }
+        Poll updatedPoll = pollsRepository.save(poll);
+        return updatedPoll;
     }
 }

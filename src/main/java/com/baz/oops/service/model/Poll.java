@@ -84,6 +84,7 @@ public class Poll {
     @Setter(AccessLevel.PRIVATE)
     @OneToMany(mappedBy = "poll",
             cascade = CascadeType.ALL,
+            fetch = FetchType.EAGER,
             orphanRemoval = true)
     @JsonManagedReference
     private List<Option> options;
