@@ -1,6 +1,7 @@
 package com.baz.oops.api.functional;
 
 import com.baz.oops.persistence.PollsRepository;
+import com.baz.oops.service.PollService;
 import com.baz.oops.service.model.Option;
 import com.baz.oops.service.model.Poll;
 
@@ -33,6 +34,8 @@ public class VoteApiTests {
 
     @Autowired
     private PollsRepository pollsRepository;
+    @Autowired
+    private PollService pollService;
 
     @LocalServerPort
     private int port;
@@ -57,12 +60,14 @@ public class VoteApiTests {
         buildTheWallPoll.addOption(new Option("YES"));
         buildTheWallPoll.addOption(new Option("hell no"));
 
-        savedPoll = pollsRepository.save(buildTheWallPoll);
+        savedPoll = pollService.createPoll(buildTheWallPoll.getName(), buildTheWallPoll.getOptions());
     }
 
     @Test
     public void voteForOptionOneInPoll_ExistingPollIdInPath_ShouldReturn200AndBody() {
-        String votingEndpoint = "polls/" + savedPoll.getId()
+        String existingId = savedPoll.getPublicId();
+
+        String votingEndpoint = "polls/" + existingId
                 + "/options/" + OPTION_ONE_INDEX + "/vote";
 
         ResponseEntity<Poll> response = client.exchange(
@@ -77,7 +82,9 @@ public class VoteApiTests {
 
     @Test
     public void voteForOptionOneInPoll_ExistingPollIdInPath_ShouldUpdatePollInRepository() {
-        String votingEndpoint = "polls/" + savedPoll.getId()
+        String existingId = savedPoll.getPublicId();
+
+        String votingEndpoint = "polls/" + existingId
                 + "/options/" + OPTION_ONE_INDEX + "/vote";
 
         ResponseEntity<Poll> response = client.exchange(
@@ -86,16 +93,17 @@ public class VoteApiTests {
                 null,
                 Poll.class);
 
-        int optionOneVotesCount = 1;
-        Poll repositoryPoll = pollsRepository.findOne(savedPoll.getId());
-        Assert.assertEquals(optionOneVotesCount,
+        int votesCount = 1;
+        Poll repositoryPoll = pollsRepository.findOne(savedPoll.getPrivateId());
+        Assert.assertEquals(votesCount,
                 repositoryPoll.getOptions().get(OPTION_ONE_INDEX).getVotesCount());
     }
 
     @Test
     public void voteForOptionOneInPoll_ExistingPollIdInPath_ShouldReturnPollWithVotedOption() {
-        int oneVote = 1;
-        String votingEndpoint = "polls/" + savedPoll.getId()
+        String existingId = savedPoll.getPublicId();
+
+        String votingEndpoint = "polls/" + existingId
                 + "/options/" + OPTION_ONE_INDEX + "/vote";
 
         ResponseEntity<Poll> response = client.exchange(
@@ -104,13 +112,14 @@ public class VoteApiTests {
                 null,
                 Poll.class);
 
+        int votesCount = 1;
         Poll poll = response.getBody();
-        Assert.assertEquals(oneVote, poll.getOptions().get(OPTION_ONE_INDEX).getVotesCount());
+        Assert.assertEquals(votesCount, poll.getOptions().get(OPTION_ONE_INDEX).getVotesCount());
     }
 
     @Test
     public void voteForOptionOneInPoll_NotExistingPollIdInPath_ShouldReturn404() {
-        long notExistingPollId = savedPoll.getId() + 1;
+        String notExistingPollId = Long.toString(savedPoll.getPrivateId());
 
         String votingEndpoint = "polls/" + notExistingPollId
                 + "/options/" + OPTION_ONE_INDEX + "/vote";
@@ -126,7 +135,7 @@ public class VoteApiTests {
 
     @Test
     public void voteForOptionOneInPoll_NotExistingPollOptionIndxInPath_ShouldReturn404() {
-        long existingPollId = savedPoll.getId();
+        String existingPollId = savedPoll.getPublicId();
         int notExistingOptionIndx = savedPoll.getOptions().size();
 
         String votingEndpoint = "polls/" + existingPollId
@@ -143,7 +152,7 @@ public class VoteApiTests {
 
     @Test
     public void voteForOptionOneInPoll_NegativePollOptionIndxInPath_ShouldReturn400() {
-        long existingPollId = savedPoll.getId();
+        String existingPollId = savedPoll.getPublicId();
         int negativeOptionIndx = -1;
 
         String votingEndpoint = "polls/" + existingPollId

@@ -2,7 +2,10 @@ package com.baz.oops.service.model;
 
 import com.baz.oops.service.enums.State;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.hibernate.annotations.CollectionType;
 import org.hibernate.annotations.CreationTimestamp;
@@ -24,6 +27,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -47,17 +51,24 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@EqualsAndHashCode(exclude = {"id","options"})
-@ToString(exclude = {"id"})
+@EqualsAndHashCode(exclude = {"privateId", "publicId", "options"})
+@ToString
 @Entity
 @Table(name = "polls")
 public class Poll {
-    @Column(nullable = false)
-    private String name;
 
     @Id
-    @GeneratedValue
-    private long id;
+    @JsonIgnore
+    @Column(unique = true, name = "private_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long privateId;
+
+    @JsonProperty("id")
+    @Column(unique = true, name = "public_id")
+    private String publicId;
+
+    @Column(nullable = false)
+    private String name;
 
     @Column(name = "create_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
@@ -73,6 +84,10 @@ public class Poll {
 
     @Column(name = "multi_options")
     private boolean multiOptions;
+
+    @Column(name = "private")
+    @JsonProperty("private")
+    private boolean hidden;
 
     @Column(name = "total_votes")
     private int totalVotes;
@@ -113,6 +128,7 @@ public class Poll {
         this.tags = new HashSet<>();
         this.options = new ArrayList<>();
         initCreationDate();
+
     }
 
 }

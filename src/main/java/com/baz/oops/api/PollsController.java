@@ -64,10 +64,7 @@ public class PollsController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity showPoll(@PathVariable("id") long id) {
-        if (id <= 0) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity showPoll(@PathVariable("id") String id) {
 
         Poll poll = pollService.getById(id);
         if (poll == null) {
@@ -78,12 +75,8 @@ public class PollsController {
     }
 
     @RequestMapping(value = "/{id}/options/{indx}/vote", method = RequestMethod.PUT)
-    public ResponseEntity vote(@PathVariable("id") long id,
+    public ResponseEntity vote(@PathVariable("id") String id,
                                @PathVariable("indx") int optionIndx) {
-        if (id <= 0) {
-            log.warn("negative id in path");
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
         if (optionIndx < 0) {
             log.warn("negative option index in path");
             return new ResponseEntity(HttpStatus.BAD_REQUEST);

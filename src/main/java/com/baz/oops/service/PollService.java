@@ -18,7 +18,7 @@ public interface PollService {
 
     Poll createPoll(String name, List<Option> options);
 
-    Poll getById(long id);
+    Poll getById(String id);
 
-    Poll vote(long id, int optionIndx);
+    Poll vote(String id, int optionIndx);
 }

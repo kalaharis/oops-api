@@ -2,6 +2,7 @@ package com.baz.oops.api.functional;
 
 import com.baz.oops.api.spring.ResponsePage;
 import com.baz.oops.persistence.PollsRepository;
+import com.baz.oops.service.PollService;
 import com.baz.oops.service.enums.State;
 import com.baz.oops.service.model.Option;
 import com.baz.oops.service.model.Poll;
@@ -97,9 +98,15 @@ public class ListPollsApiTests {
         rickRollPoll.setTags(tags);
         rickRollPoll.setCreateDate(df.parse(THIRD_POLL_CREATION_DATE));
 
+        Poll privatePoll = new Poll("Should this poll be public?");
+        privatePoll.addOption(new Option("I dont think so"));
+        privatePoll.addOption(new Option("Yes"));
+        privatePoll.setHidden(true);
+
         firstSavedPoll = pollsRepository.save(toBeOrNotPoll);
         secondSavedPoll = pollsRepository.save(simpleMathPoll);
         thirdSavedPoll = pollsRepository.save(rickRollPoll);
+        pollsRepository.save(privatePoll);
     }
 
     @Test

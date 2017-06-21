@@ -66,6 +66,9 @@ public class PollsFilter implements Specification<Poll> {
             predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createDate"), endDate));
         }
 
+        //return only public polls
+        predicates.add(criteriaBuilder.equal(root.get("hidden"),false));
+
         return predicates.size() <= 0 ? null :
                 criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
     }

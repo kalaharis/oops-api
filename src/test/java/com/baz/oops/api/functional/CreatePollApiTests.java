@@ -27,9 +27,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Created by arahis on 6/19/17.
  */
+@Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CreatePollApiTests {
@@ -47,10 +50,8 @@ public class CreatePollApiTests {
 
     private RestTemplate client = new RestTemplate();
 
-    private Poll savedPoll;
-
     @Before
-    public void init() throws ParseException {
+    public void init() {
         client.setErrorHandler(new DefaultResponseErrorHandler() {
             @Override
             public boolean hasError(ClientHttpResponse response) throws IOException {
@@ -99,6 +100,26 @@ public class CreatePollApiTests {
                 OPTION_ONE_NAME);
         Assert.assertEquals(createdPoll.getOptions().get(OPTION_TWO_INDEX).getName(),
                 OPTION_TWO_NAME);
+    }
+
+    @Test
+    public void createPoll_ValidPostRequest_PollShouldHavePublicIdAndNotPrivateId() {
+        List<Option> options = new ArrayList<>();
+        options.add(new Option(OPTION_ONE_NAME));
+        options.add(new Option(OPTION_TWO_NAME));
+
+        CreatePollRequest requestBody = new CreatePollRequest(POLL_NAME, options);
+
+        ResponseEntity<Poll> response = client.exchange(
+                getUriForEndPoint("polls"),
+                HttpMethod.POST,
+                new HttpEntity<CreatePollRequest>(requestBody),
+                Poll.class);
+
+        Poll createdPoll = response.getBody();
+        Assert.assertNotNull(createdPoll.getPublicId());
+        int noPrivateId = 0;
+        Assert.assertEquals(noPrivateId, createdPoll.getPrivateId());
     }
 
     @Test

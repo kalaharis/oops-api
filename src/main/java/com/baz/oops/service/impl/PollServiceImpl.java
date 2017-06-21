@@ -3,6 +3,7 @@ package com.baz.oops.service.impl;
 import com.baz.oops.api.spring.PollsFilter;
 import com.baz.oops.persistence.PollsRepository;
 import com.baz.oops.service.PollService;
+import com.baz.oops.service.crypt.Hashids;
 import com.baz.oops.service.model.Option;
 import com.baz.oops.service.model.Poll;
 
@@ -14,13 +15,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Created by arahis on 6/11/17.
  */
+@Slf4j
 @Service
 public class PollServiceImpl implements PollService {
 
     private PollsRepository pollsRepository;
+
+    private final String SALT = System.getenv("SALT");
+    private final String MIN_HASH_LENGTH = System.getenv("MIN_HASH_LENGTH");
 
     @Autowired
     public PollServiceImpl(PollsRepository pollsRepository) {
@@ -33,23 +40,30 @@ public class PollServiceImpl implements PollService {
     }
 
     @Override
+    @Transactional
     public Poll createPoll(String name, List<Option> options) {
         Poll poll = new Poll(name);
         poll.addOptions(options);
-        Poll createdPoll = pollsRepository.save(poll);
-        return createdPoll;
+
+        poll = pollsRepository.save(poll);
+
+        poll.setPublicId(createPublicId(poll.getPrivateId()));
+
+        return pollsRepository.save(poll);
     }
 
     @Override
-    public Poll getById(long id) {
-        Poll poll = pollsRepository.findOne(id);
+    public Poll getById(String id) {
+        long privateId = getPrivateIdFromPublic(id);
+        Poll poll = pollsRepository.findOne(privateId);
         return poll;
     }
 
     @Override
     @Transactional
-    public Poll vote(long id, int optionIndx) {
-        Poll poll = pollsRepository.findOne(id);
+    public Poll vote(String id, int optionIndx) {
+        long privateId = getPrivateIdFromPublic(id);
+        Poll poll = pollsRepository.findOne(privateId);
         if (poll == null) {
             return null;
         }
@@ -61,4 +75,32 @@ public class PollServiceImpl implements PollService {
         Poll updatedPoll = pollsRepository.save(poll);
         return updatedPoll;
     }
+
+
+    private String createPublicId(long privateId) {
+        log.info("encryption of private id...");
+        log.info("result: private id = " + privateId);
+        Hashids hashids = new Hashids(SALT, Integer.parseInt(MIN_HASH_LENGTH));
+        String publicId = hashids.encrypt(privateId);
+
+        log.info("given: public id = " + publicId);
+        return publicId;
+    }
+
+    private long getPrivateIdFromPublic(String publicId) {
+        log.info("decryption of public id...");
+        log.info("given: public id = " + publicId);
+
+        Hashids hashids = new Hashids(SALT, Integer.parseInt(MIN_HASH_LENGTH));
+        long[] ids = hashids.decrypt(publicId);
+        if (ids.length == 0) {
+            return 0;
+        }
+        long privateId = ids[0];
+
+        log.info("result: private id = " + privateId);
+        return privateId;
+    }
+
+
 }
