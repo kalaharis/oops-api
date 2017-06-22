@@ -54,7 +54,4 @@ public class Option {
         this.name = name;
     }
 
-    public void vote() {
-        this.votesCount++;
-    }
 }

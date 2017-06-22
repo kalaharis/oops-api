@@ -60,15 +60,18 @@ public class PollServiceImpl implements PollService {
     }
 
     @Override
-    @Transactional
+    @Transactional //not sure
     public Poll vote(String id, int optionIndx) {
-        long privateId = getPrivateIdFromPublic(id);
-        Poll poll = pollsRepository.findOne(privateId);
+        Poll poll = getById(id);
         if (poll == null) {
             return null;
         }
         try {
-            poll.getOptions().get(optionIndx).vote();
+            int updatedOptionVotes = poll.getOptions().get(optionIndx).getVotesCount() + 1;
+            poll.getOptions().get(optionIndx).setVotesCount(updatedOptionVotes);
+
+            int updatedTotalVotes = poll.getTotalVotes() + 1;
+            poll.setTotalVotes(updatedTotalVotes);
         } catch (IndexOutOfBoundsException ex) {
             return null;
         }

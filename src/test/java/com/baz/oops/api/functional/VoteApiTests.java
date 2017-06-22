@@ -31,6 +31,7 @@ import java.text.ParseException;
 public class VoteApiTests {
 
     private final int OPTION_ONE_INDEX = 0;
+    private final int OPTION_TWO_INDEX = 1;
 
     @Autowired
     private PollsRepository pollsRepository;
@@ -81,6 +82,44 @@ public class VoteApiTests {
     }
 
     @Test
+    public void multipleVotesForMultipleOptions_ExistingPollIdInPath_ShouldUpdatePollInRepository() {
+        String existingId = savedPoll.getPublicId();
+
+        String votingEndpointOptionOne = "polls/" + existingId
+                + "/options/" + OPTION_ONE_INDEX + "/vote";
+        String votingEndpointOptionTwo = "polls/" + existingId
+                + "/options/" + OPTION_TWO_INDEX + "/vote";
+
+        int optionOneVoteTimes = 3;
+        int optionTwoVoteTimes = 2;
+        int expectedTotalVotes = optionOneVoteTimes + optionTwoVoteTimes;
+        for (int i = 0; i < optionOneVoteTimes; i++) {
+            client.exchange(
+                    getUriForEndPoint(votingEndpointOptionOne),
+                    HttpMethod.PUT,
+                    null,
+                    Poll.class);
+        }
+        for (int i = 0; i < optionTwoVoteTimes; i++) {
+            client.exchange(
+                    getUriForEndPoint(votingEndpointOptionTwo),
+                    HttpMethod.PUT,
+                    null,
+                    Poll.class);
+        }
+
+        Poll repositoryPoll = pollsRepository.findOne(savedPoll.getPrivateId());
+
+        int actualVotesCountOptionOne = repositoryPoll.getOptions().get(OPTION_ONE_INDEX).getVotesCount();
+        int actualVotesCountOptionTwo = repositoryPoll.getOptions().get(OPTION_TWO_INDEX).getVotesCount();
+        int actualTotalVotes = repositoryPoll.getTotalVotes();
+
+        Assert.assertEquals(optionOneVoteTimes, actualVotesCountOptionOne);
+        Assert.assertEquals(optionTwoVoteTimes, actualVotesCountOptionTwo);
+        Assert.assertEquals(expectedTotalVotes, actualTotalVotes);
+    }
+
+    @Test
     public void voteForOptionOneInPoll_ExistingPollIdInPath_ShouldUpdatePollInRepository() {
         String existingId = savedPoll.getPublicId();
 
@@ -97,7 +136,9 @@ public class VoteApiTests {
         Poll repositoryPoll = pollsRepository.findOne(savedPoll.getPrivateId());
         Assert.assertEquals(votesCount,
                 repositoryPoll.getOptions().get(OPTION_ONE_INDEX).getVotesCount());
+        Assert.assertEquals(votesCount, repositoryPoll.getTotalVotes());
     }
+
 
     @Test
     public void voteForOptionOneInPoll_ExistingPollIdInPath_ShouldReturnPollWithVotedOption() {
