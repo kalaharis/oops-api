@@ -1,9 +1,12 @@
 package com.baz.oops.api;
 
 import com.baz.oops.api.JSON.CreatePollRequest;
+import com.baz.oops.api.JSON.ErrorResponse;
 import com.baz.oops.api.spring.PollsFilter;
+import com.baz.oops.api.util.ParametersHandler;
 import com.baz.oops.persistence.PollsRepository;
 import com.baz.oops.service.PollService;
+import com.baz.oops.service.exceptions.ServiceException;
 import com.baz.oops.service.model.Option;
 import com.baz.oops.service.model.Poll;
 
@@ -16,9 +19,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,20 +53,14 @@ public class PollsController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity createPoll(@RequestBody CreatePollRequest req) {
-        String name = req.getName();
-        List<Option> options = req.getOptions();
-        if (name.equals("")) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    public ResponseEntity createPoll(@RequestBody(required = false) CreatePollRequest req) {
+        try {
+            Poll poll = pollService.createPoll(req);
+            return new ResponseEntity(poll, HttpStatus.CREATED);
+        } catch (ServiceException ex) {
+            ErrorResponse err = new ErrorResponse(400, ex.getMessage());
+            return new ResponseEntity(err, HttpStatus.BAD_REQUEST);
         }
-        if (options.size() < 2) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
-        Poll poll = pollService.createPoll(name, options);
-        if (poll == null) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity(poll, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -74,14 +74,27 @@ public class PollsController {
         return new ResponseEntity(poll, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/{id}/options/{indx}/vote", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity vote(@PathVariable("id") String id,
-                               @PathVariable("indx") int optionIndx) {
-        if (optionIndx < 0) {
-            log.warn("negative option index in path");
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+                               @RequestParam(value = "vote", required = true) Set<Integer> indexesSet) {
+        Poll poll = null;
+        int[] indexes = new int[indexesSet.size()];
+        int i = 0;
+        for (int indx : indexesSet) {
+            log.info("option indexe: " + indx);
+            indexes[i] = indx;
+            i++;
+            if (indx < 0) {
+                log.warn("negative option index in path");
+                return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            }
         }
-        Poll poll = pollService.vote(id, optionIndx);
+        try {
+            poll = pollService.vote(id, indexes);
+        } catch (ServiceException ex) {
+            ErrorResponse err = new ErrorResponse(400, ex.getMessage());
+            return new ResponseEntity(err, HttpStatus.BAD_REQUEST);
+        }
         if (poll == null) {
             log.warn("poll or poll's option not found");
             return new ResponseEntity(HttpStatus.NOT_FOUND);

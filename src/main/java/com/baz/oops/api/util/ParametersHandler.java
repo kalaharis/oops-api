@@ -1,17 +1,16 @@
 package com.baz.oops.api.util;
 
-import com.baz.oops.api.exceptions.BadRequestParamException;
 import com.baz.oops.service.enums.State;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 
 import lombok.extern.slf4j.Slf4j;
+
 
 /**
  * Created by arahis on 6/13/17.
