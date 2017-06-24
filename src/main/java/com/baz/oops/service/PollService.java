@@ -8,6 +8,8 @@ import com.baz.oops.service.model.Poll;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Set;
+
 /**
  * Created by arahis on 6/11/17.
  */
@@ -19,5 +21,5 @@ public interface PollService {
 
     Poll getById(String id);
 
-    Poll vote(String id, int[] indexes) throws ServiceException;
+    Poll vote(String id, Set<Integer> indexes) throws ServiceException;
 }

@@ -1,12 +1,9 @@
 package com.baz.oops.service.reqhandlers;
 
 import com.baz.oops.api.JSON.CreatePollRequest;
-import com.baz.oops.api.util.ParametersHandler;
 import com.baz.oops.service.exceptions.PollCreationException;
 import com.baz.oops.service.exceptions.ServiceException;
 import com.baz.oops.service.model.Option;
-
-import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;

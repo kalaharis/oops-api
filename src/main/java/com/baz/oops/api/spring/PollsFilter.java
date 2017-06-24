@@ -1,6 +1,6 @@
 package com.baz.oops.api.spring;
 
-import com.baz.oops.api.util.ParametersHandler;
+import com.baz.oops.service.reqhandlers.ParametersHandler;
 import com.baz.oops.service.enums.State;
 import com.baz.oops.service.model.Poll;
 

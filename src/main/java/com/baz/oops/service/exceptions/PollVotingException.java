@@ -8,4 +8,8 @@ public class PollVotingException extends ServiceException {
     public PollVotingException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public PollVotingException(String message) {
+        super(message);
+    }
 }

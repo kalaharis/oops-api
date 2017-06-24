@@ -7,6 +7,7 @@ import com.baz.oops.service.PollService;
 import com.baz.oops.service.crypt.Hashids;
 import com.baz.oops.service.enums.State;
 import com.baz.oops.service.exceptions.PollCreationException;
+import com.baz.oops.service.exceptions.PollNotFoundException;
 import com.baz.oops.service.exceptions.PollVotingException;
 import com.baz.oops.service.exceptions.ServiceException;
 import com.baz.oops.service.model.Poll;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -82,29 +84,40 @@ public class PollServiceImpl implements PollService {
 
     @Override
     @Transactional
-    public Poll vote(String id, int[] indexes) throws ServiceException {
+    public Poll vote(String id, Set<Integer> indexes) throws ServiceException {
         Poll poll = getById(id);
+
         if (poll == null) {
-            return null;
+            throw new PollNotFoundException("Poll not found");
         }
+
         if (poll.getState() == State.CLOSED) {
-            throw new PollVotingException("Cannot vote when poll is closed", null);
+            throw new PollVotingException("Cannot vote: poll is closed");
         }
-        if (poll.isMultiOptions() == false && indexes.length > 1) {
-            throw new PollVotingException("Cannot vote for multiple options when poll is normal", null);
+
+        if (!poll.isMultiOptions() && indexes.size() > 1) {
+            throw new PollVotingException("Cannot vote: poll doesn't support multiple choices");
         }
+
+        return updatePollVotes(poll, indexes);
+    }
+
+    private Poll updatePollVotes(Poll poll, Set<Integer> indexes) throws ServiceException {
         try {
-            int updatedTotalVotes = poll.getTotalVotes() + 1;
-            poll.setTotalVotes(updatedTotalVotes);
             for (int indx : indexes) {
+                if (indx < 0) {
+                    throw new PollVotingException("Cannot vote: option index cannot be negative");
+                }
                 int updatedOptionVotes = poll.getOptions().get(indx).getVotesCount() + 1;
                 poll.getOptions().get(indx).setVotesCount(updatedOptionVotes);
             }
+
+            int updatedTotalVotes = poll.getTotalVotes() + 1;
+            poll.setTotalVotes(updatedTotalVotes);
         } catch (IndexOutOfBoundsException ex) {
-            return null;
+            throw new PollVotingException("Poll doesn't have such option(s)", ex);
         }
-        Poll updatedPoll = pollsRepository.save(poll);
-        return updatedPoll;
+        return pollsRepository.save(poll);
     }
 
 

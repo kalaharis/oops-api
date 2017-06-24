@@ -1,13 +1,11 @@
 package com.baz.oops.api.util;
 
-import com.baz.oops.api.exceptions.BadRequestParamException;
+import com.baz.oops.service.reqhandlers.ParametersHandler;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
