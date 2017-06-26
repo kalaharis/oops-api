@@ -34,21 +34,18 @@ public class OopsApplication implements CommandLineRunner {
     }
 
     //TODO: uncomment after dev
-    /*@Bean
+    @Bean
     public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurerAdapter() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("*/
+        return new WebMvcConfigurerAdapter() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("")
+                        .allowedMethods("POST", "GET", "DELETE", "PUT")
+                        .allowedOrigins("http://localhost:4200");
+            }
+        };
+    }
 
-    /**
-     * ")
-     * .allowedMethods("POST","GET","DELETE","PUT")
-     * .allowedOrigins("http://localhost:4200");
-     * }
-     * };
-     * }
-     */
 
     //TODO: remove a production
     @Override
