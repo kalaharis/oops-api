@@ -19,7 +19,7 @@ public interface PollService {
 
     Poll createPoll(CreatePollRequest request) throws ServiceException;
 
-    Poll getById(String id);
+    Poll getById(String id) throws ServiceException;
 
     Poll vote(String id, Set<Integer> indexes) throws ServiceException;
 }

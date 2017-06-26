@@ -11,4 +11,7 @@ public class PollCreationException extends ServiceException {
     public PollCreationException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public PollCreationException() {
+    }
 }

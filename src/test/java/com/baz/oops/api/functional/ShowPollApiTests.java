@@ -4,7 +4,6 @@ import com.baz.oops.api.JSON.CreatePollRequest;
 import com.baz.oops.persistence.PollsRepository;
 import com.baz.oops.service.PollService;
 import com.baz.oops.service.exceptions.ServiceException;
-import com.baz.oops.service.impl.PollServiceImpl;
 import com.baz.oops.service.model.Option;
 import com.baz.oops.service.model.Poll;
 
@@ -22,12 +21,14 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+
+import javax.servlet.ServletContext;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +39,11 @@ import lombok.extern.slf4j.Slf4j;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ShowPollApiTests {
+
+    private static final String BASE_URL = "http://localhost";
+
+    @Autowired
+    private ServletContext context;
 
     @Autowired
     private PollsRepository pollsRepository;
@@ -73,26 +79,32 @@ public class ShowPollApiTests {
     public void showPoll_ExistingPollIdInPath_ShouldReturn200AndBody() {
         String existingId = savedPoll.getPublicId();
 
-        ResponseEntity<Poll> response = client.exchange(
-                getUriForEndPoint("polls/" + existingId),
-                HttpMethod.GET,
-                null,
-                Poll.class);
+        UriComponents uri = UriComponentsBuilder
+                .fromHttpUrl(BASE_URL).port(port)
+                .path(context.getContextPath() + "/polls/" + existingId)
+                .build().encode();
 
+        ResponseEntity<Poll> response = client.exchange(
+                uri.toUri(), HttpMethod.GET,
+                null, Poll.class);
 
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertNotNull(response.getBody());
     }
 
     @Test
-    public void showPoll_ExistingPollIdInPath_BodyShouldContainSavedPoll() {
+    public void showPoll_ExistingPollIdInPath_ShouldReturnPoll() {
         String existingId = savedPoll.getPublicId();
 
+        UriComponents uri = UriComponentsBuilder
+                .fromHttpUrl(BASE_URL).port(port)
+                .path(context.getContextPath() + "/polls/" + existingId)
+                .build().encode();
+
         ResponseEntity<Poll> response = client.exchange(
-                getUriForEndPoint("polls/" + existingId),
-                HttpMethod.GET,
-                null,
-                Poll.class);
+                uri.toUri(), HttpMethod.GET,
+                null, Poll.class);
+
         Poll poll = response.getBody();
 
         Assert.assertEquals(savedPoll, poll);
@@ -101,20 +113,19 @@ public class ShowPollApiTests {
 
     @Test
     public void showPoll_NotExistingPollIdInPath_ShouldReturn404() {
-        String notExistingId = "0000";
-        Assert.assertNotEquals(notExistingId, savedPoll.getPublicId());
+        pollsRepository.deleteAll();
+        String notExistingId = "0";
+
+        UriComponents uri = UriComponentsBuilder
+                .fromHttpUrl(BASE_URL).port(port)
+                .path(context.getContextPath() + "/polls/" + notExistingId)
+                .build().encode();
 
         ResponseEntity<Poll> response = client.exchange(
-                getUriForEndPoint("polls/" + notExistingId),
-                HttpMethod.GET,
-                null,
-                Poll.class);
+                uri.toUri(), HttpMethod.GET,
+                null, Poll.class);
 
         Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
-
-    private String getUriForEndPoint(String endpoint) {
-        return "http://localhost:" + port + "api/" + endpoint;
-    }
 }

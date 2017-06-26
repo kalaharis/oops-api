@@ -1,4 +1,4 @@
-package com.baz.oops.service.impl;
+package com.baz.oops.service;
 
 import com.baz.oops.api.JSON.CreatePollRequest;
 import com.baz.oops.api.spring.PollsFilter;
@@ -73,9 +73,12 @@ public class PollServiceImpl implements PollService {
 
     @Override
     @Transactional
-    public Poll getById(String id) {
+    public Poll getById(String id) throws ServiceException {
         long privateId = getPrivateIdFromPublic(id);
         Poll poll = pollsRepository.findOne(privateId);
+        if (poll == null) {
+            throw new PollNotFoundException();
+        }
         if (isPollOutDated(poll)) {
             poll = closePoll(poll);
         }
@@ -88,7 +91,7 @@ public class PollServiceImpl implements PollService {
         Poll poll = getById(id);
 
         if (poll == null) {
-            throw new PollNotFoundException("Poll not found");
+            throw new PollNotFoundException();
         }
 
         if (poll.getState() == State.CLOSED) {
@@ -147,9 +150,6 @@ public class PollServiceImpl implements PollService {
     }
 
     private boolean isPollOutDated(Poll poll) {
-        if (poll == null) {
-            return false;
-        }
         if (poll.getState() == State.CLOSED) {
             return false;
         }

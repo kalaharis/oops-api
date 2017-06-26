@@ -37,9 +37,6 @@ public class PollsController {
     private PollService pollService;
 
     @Autowired
-    private PollsRepository pollsRepository; //TODO: remove
-
-    @Autowired
     public PollsController(PollService pollService) {
         this.pollService = pollService;
     }
@@ -64,12 +61,16 @@ public class PollsController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ResponseEntity showPoll(@PathVariable("id") String id) {
 
-        Poll poll = pollService.getById(id);
-        if (poll == null) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        try {
+            Poll poll = pollService.getById(id);
+            return new ResponseEntity(poll, HttpStatus.OK);
+        } catch (PollNotFoundException ex) {
+            ErrorResponse err = new ErrorResponse(404, ex.getMessage());
+            return new ResponseEntity(err, HttpStatus.NOT_FOUND);
+        }catch (ServiceException ex){
+            ErrorResponse err = new ErrorResponse(500, ex.getMessage());
+            return new ResponseEntity(err, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity(poll, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
@@ -79,7 +80,6 @@ public class PollsController {
         try {
             Poll poll = pollService.vote(id, indexes);
             return new ResponseEntity(poll, HttpStatus.OK);
-
         } catch (PollNotFoundException ex) {
             ErrorResponse err = new ErrorResponse(404, ex.getMessage());
             return new ResponseEntity(err, HttpStatus.NOT_FOUND);

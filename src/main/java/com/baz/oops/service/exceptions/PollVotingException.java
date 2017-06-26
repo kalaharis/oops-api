@@ -12,4 +12,7 @@ public class PollVotingException extends ServiceException {
     public PollVotingException(String message) {
         super(message);
     }
+
+    public PollVotingException() {
+    }
 }
