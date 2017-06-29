@@ -45,14 +45,14 @@ public class VoteApiTests {
     private final int OPTION_TWO_INDEX = 1;
 
     @Autowired
-    private PollsRepository pollsRepository;
-    @Autowired
-    private PollService pollService;
-
-    @Autowired
     private ServletContext context;
     @LocalServerPort
     private int port;
+
+    @Autowired
+    private PollsRepository pollsRepository;
+    @Autowired
+    private PollService pollService;
 
     private RestTemplate client = new RestTemplate();
 

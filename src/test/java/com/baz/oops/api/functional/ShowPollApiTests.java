@@ -44,14 +44,14 @@ public class ShowPollApiTests {
 
     @Autowired
     private ServletContext context;
+    @LocalServerPort
+    private int port;
 
     @Autowired
     private PollsRepository pollsRepository;
+
     @Autowired
     private PollService pollService;
-
-    @LocalServerPort
-    private int port;
 
     private RestTemplate client = new RestTemplate();
 
