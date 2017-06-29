@@ -17,10 +17,10 @@ public class CreatePollRequestHandler {
     public static String getNameFromRequest(CreatePollRequest req) throws ServiceException {
         String name = req.getName();
         if (name == null) {
-            throw new PollCreationException("No \"name\" parameter found", null);
+            throw new PollCreationException("Cannot create poll: no \"name\" found");
         }
         if (name.trim().isEmpty()) {
-            throw new PollCreationException("Not valid name for poll", null);
+            throw new PollCreationException("Cannot create poll: not valid name for poll");
         }
         return name;
     }
@@ -28,10 +28,10 @@ public class CreatePollRequestHandler {
     public static List<Option> getOptionsFromRequest(CreatePollRequest req) throws ServiceException {
         List<Option> options = req.getOptions();
         if (options == null) {
-            throw new PollCreationException("No \"options\" parameter found", null);
+            throw new PollCreationException("Cannot create poll: no \"options\" found");
         }
         if (options.size() < 2) {
-            throw new PollCreationException("There should be at least 2 options", null);
+            throw new PollCreationException("Cannot create poll: there should be at least 2 options");
         }
         return options;
     }

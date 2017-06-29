@@ -5,6 +5,7 @@ import com.baz.oops.api.JSON.ErrorResponse;
 import com.baz.oops.api.spring.PollsFilter;
 import com.baz.oops.persistence.PollsRepository;
 import com.baz.oops.service.PollService;
+import com.baz.oops.service.exceptions.PollCreationException;
 import com.baz.oops.service.exceptions.PollNotFoundException;
 import com.baz.oops.service.exceptions.PollVotingException;
 import com.baz.oops.service.exceptions.ServiceException;
@@ -52,9 +53,12 @@ public class PollsController {
         try {
             Poll poll = pollService.createPoll(req);
             return new ResponseEntity(poll, HttpStatus.CREATED);
-        } catch (ServiceException ex) {
+        } catch (PollCreationException ex) {
             ErrorResponse err = new ErrorResponse(400, ex.getMessage());
             return new ResponseEntity(err, HttpStatus.BAD_REQUEST);
+        } catch (ServiceException ex) {
+            ErrorResponse err = new ErrorResponse(500, ex.getMessage());
+            return new ResponseEntity(err, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -67,7 +71,7 @@ public class PollsController {
         } catch (PollNotFoundException ex) {
             ErrorResponse err = new ErrorResponse(404, ex.getMessage());
             return new ResponseEntity(err, HttpStatus.NOT_FOUND);
-        }catch (ServiceException ex){
+        } catch (ServiceException ex) {
             ErrorResponse err = new ErrorResponse(500, ex.getMessage());
             return new ResponseEntity(err, HttpStatus.INTERNAL_SERVER_ERROR);
         }

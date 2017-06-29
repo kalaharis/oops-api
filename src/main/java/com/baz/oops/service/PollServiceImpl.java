@@ -64,7 +64,7 @@ public class PollServiceImpl implements PollService {
 
         poll = pollsRepository.save(poll);
         if (poll == null) {
-            throw new PollCreationException("something went wrong", null);
+            throw new ServiceException("Cannot create poll: something went wrong");
         }
 
         poll.setPublicId(createPublicId(poll.getPrivateId()));
