@@ -43,8 +43,11 @@ Status: 200 OK
 |Name|Type|Description|
 |----|----|-----------|
 |name|string|**Required**. Name of the poll|
-|options|string[]|**Required. Should contain at least 2 options.** Poll's options|
-  
+|options|string[]|**Required at least 2.** Poll's options|
+|tags|string[]|Poll's tags
+|expireDate|string|When poll will be closed. Format: "yyyy-MM-ddTHH:mm:ssZ" GMT/UTC.
+|hidden|boolean|Will poll be public or private
+|multiOptions|boolean| Will poll allow multiple choices
 #### Response
 ~~~
 Status: 201 CREATED
