@@ -85,12 +85,11 @@ Status: 200 OK
 ~~~
 
 ## Voting
-`PUT /polls/{id}/vote`
-#### Input
+`PUT /polls/{id}`
+#### Parameters
 |Name|Type|Description|
 |----|----|-----------|
-|poll_id|long|**Required**. Id of poll|
-|options|string[]|**Required. Should contain only one option if multioptions disabled for poll** Poll's options|
+|vote|number[]|**Required.** Selected option(s)|
 
 #### Response
 ~~~
