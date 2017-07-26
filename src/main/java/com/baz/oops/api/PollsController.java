@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -78,8 +80,10 @@ public class PollsController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public ResponseEntity vote(@PathVariable("id") String id,
+    public ResponseEntity vote(HttpServletRequest request,
+                               @PathVariable("id") String id,
                                @RequestParam(value = "vote", required = true) Set<Integer> indexes) {
+        log.info("vote request from: " + request.getRemoteAddr());
 
         try {
             Poll poll = pollService.vote(id, indexes);
