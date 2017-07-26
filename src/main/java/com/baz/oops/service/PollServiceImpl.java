@@ -88,6 +88,10 @@ public class PollServiceImpl implements PollService {
     @Override
     @Transactional
     public Poll vote(String id, Set<Integer> indexes) throws ServiceException {
+        if (indexes.size() == 0) {
+            throw new PollVotingException("Cannot vote: no options selected");
+        }
+
         Poll poll = getById(id);
 
         if (poll == null) {
