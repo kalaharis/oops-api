@@ -1,12 +1,7 @@
 package com.baz.oops;
 
-import com.baz.oops.api.JSON.CreatePollRequest;
-import com.baz.oops.api.PollsController;
 import com.baz.oops.persistence.PollsRepository;
-import com.baz.oops.service.PollService;
-import com.baz.oops.service.PollServiceImpl;
 import com.baz.oops.service.crypt.Hashids;
-import com.baz.oops.service.enums.State;
 import com.baz.oops.service.model.Option;
 import com.baz.oops.service.model.Poll;
 
@@ -19,11 +14,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +30,8 @@ public class OopsApplication implements CommandLineRunner {
     private PollsRepository pollsRepository;
     //
 
+    private final String ORIGINS = System.getenv("ORIGINS");
+
     public static void main(String[] args) {
         SpringApplication.run(OopsApplication.class, args);
     }
@@ -50,7 +44,7 @@ public class OopsApplication implements CommandLineRunner {
                 log.info("Configuring cors...");
                 registry.addMapping("/**")
                         .allowedMethods("POST", "GET", "DELETE", "PUT")
-                        .allowedOrigins("http://localhost:4200");
+                        .allowedOrigins(ORIGINS);
             }
         };
     }
