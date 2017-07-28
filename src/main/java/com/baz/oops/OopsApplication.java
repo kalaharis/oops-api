@@ -39,11 +39,10 @@ public class OopsApplication implements CommandLineRunner {
         return new WebMvcConfigurerAdapter() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                String origins = System.getenv("ORIGINS");
-                log.info("Configuring cors for origins: " + origins);
+                log.info("Configuring cors for ALL origins");
                 registry.addMapping("/**")
                         .allowedMethods("POST", "GET", "DELETE", "PUT")
-                        .allowedOrigins(origins);
+                        .allowedOrigins("*");
             }
         };
     }
