@@ -30,8 +30,6 @@ public class OopsApplication implements CommandLineRunner {
     private PollsRepository pollsRepository;
     //
 
-    private final String ORIGINS = System.getenv("ORIGINS");
-
     public static void main(String[] args) {
         SpringApplication.run(OopsApplication.class, args);
     }
@@ -41,14 +39,14 @@ public class OopsApplication implements CommandLineRunner {
         return new WebMvcConfigurerAdapter() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                log.info("Configuring cors...");
+                String origins = System.getenv("ORIGINS");
+                log.info("Configuring cors for origins: " + origins);
                 registry.addMapping("/**")
                         .allowedMethods("POST", "GET", "DELETE", "PUT")
-                        .allowedOrigins(ORIGINS);
+                        .allowedOrigins(origins);
             }
         };
     }
-
 
     private String createPublicId(long privateId) {
         log.info("encryption of private id...");
