@@ -347,8 +347,8 @@ public class VoteApiTests {
         ResponseEntity<Poll> secondVote = client.exchange(
                 uri.toUri(), HttpMethod.PUT, null, Poll.class);
 
-        Poll poll = pollsRepository.findOne(savedSignleVotePerIpPoll.getPrivateId());
-        Assert.assertNotNull(poll.getVotedIps());
+        Poll repositoryPoll = pollsRepository.findOne(savedSignleVotePerIpPoll.getPrivateId());
+        Assert.assertNotNull(repositoryPoll.getVotedIps());
 
         Assert.assertEquals(HttpStatus.OK, firstVote.getStatusCode());
 

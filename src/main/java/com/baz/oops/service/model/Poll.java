@@ -91,10 +91,6 @@ public class Poll {
     @Column(nullable = false, name = "multi_votes_ip")
     private boolean multipleVotesIp;
 
-    @Transient
-    @Column(nullable = false, name = "voted")
-    private boolean voted;
-
     @Column(nullable = false, name = "multi_options")
     private boolean multiOptions;
 

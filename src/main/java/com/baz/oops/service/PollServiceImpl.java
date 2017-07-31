@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -79,13 +78,7 @@ public class PollServiceImpl implements PollService {
         if (poll == null) {
             throw new PollNotFoundException();
         }
-        /*if (isExpired(poll)) {
-            poll = closePoll(poll);
-        }*/
-        log.info(String.format(
-                "poll to update \"%s\" with ips: " + poll.getVotedIps(), poll.getName()));
-
-        return getUpdatedPoll(poll, ip);
+        return updatePoll(poll);
     }
 
     @Override
@@ -96,18 +89,12 @@ public class PollServiceImpl implements PollService {
         }
 
         Poll poll = getById(id, ip);
-
-        log.info(String.format(
-                "poll to vote \"%s\" with ips: " + poll.getVotedIps(), poll.getName()));
-
         if (poll.getState() == State.CLOSED) {
             throw new PollVotingException("Cannot vote: poll is closed");
         }
-
-        if (poll.isVoted()) {
-            throw new PollVotingException("Cannot vote: this ip has already voted");
+        if (!poll.isMultipleVotesIp() && poll.getVotedIps().contains(ip)) {
+            throw new PollVotingException("Cannot vote: poll doesn't allow multiple votes per ip");
         }
-
         if (!poll.isMultiOptions() && indexes.size() > 1) {
             throw new PollVotingException("Cannot vote: poll doesn't support multiple choices");
         }
@@ -136,29 +123,25 @@ public class PollServiceImpl implements PollService {
         return pollsRepository.save(poll);
     }
 
-
     private String createPublicId(long privateId) {
-        log.info("encryption of private id...");
-        log.info("result: private id = " + privateId);
+        //log.info("encryption of private id...");
+        //log.info("result: private id = " + privateId);
         Hashids hashids = new Hashids(SALT, Integer.parseInt(MIN_HASH_LENGTH));
         String publicId = hashids.encrypt(privateId);
-
-        log.info("given: public id = " + publicId);
+        //log.info("given: public id = " + publicId);
         return publicId;
     }
 
     private long getPrivateIdFromPublic(String publicId) {
-        log.info("decryption of public id...");
-        log.info("given: public id = " + publicId);
-
+        //log.info("decryption of public id...");
+        //log.info("given: public id = " + publicId);
         Hashids hashids = new Hashids(SALT, Integer.parseInt(MIN_HASH_LENGTH));
         long[] ids = hashids.decrypt(publicId);
         if (ids.length == 0) {
             return 0;
         }
         long privateId = ids[0];
-
-        log.info("result: private id = " + privateId);
+        //log.info("result: private id = " + privateId);
         return privateId;
     }
 
@@ -179,35 +162,19 @@ public class PollServiceImpl implements PollService {
         return true;
     }
 
-    /*private Poll closePoll(Poll poll) {
-        poll.setState(State.CLOSED);
-        return pollsRepository.save(poll);
-    }*/
-
     private void updatePolls(Page<Poll> pollsPage, String ip) {
         List<Poll> pollsList = pollsPage.getContent();
         for (Poll poll : pollsList) {
-            /*if (isExpired(poll)) {
-                closePoll(poll);
-            }*/
-            getUpdatedPoll(poll, ip);
+            updatePoll(poll);
         }
     }
 
-    private Poll getUpdatedPoll(Poll poll, String ip) {
+    private Poll updatePoll(Poll poll) {
         if (isExpired(poll)) {
             poll.setState(State.CLOSED);
         }
-
-        Poll updatedPoll = pollsRepository.save(poll);
-
-        if (!poll.isMultipleVotesIp()) {
-            log.info(String.format(
-                    "poll \"%s\" allows only single vote per ip", poll.getName()));
-            updatedPoll.setVoted(poll.getVotedIps().contains(ip));
-        }
-
-        return updatedPoll;
+        return pollsRepository.save(poll);
     }
+
 
 }
