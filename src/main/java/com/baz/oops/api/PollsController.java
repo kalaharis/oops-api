@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +46,13 @@ public class PollsController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity listPolls(Pageable pageable, PollsFilter filter) {
-        Page<Poll> polls = pollService.listAllByPage(pageable, filter);
+    public ResponseEntity listPolls(ServletRequest request,
+                                    Pageable pageable,
+                                    PollsFilter filter) {
+        String ip = request.getRemoteAddr();
+        log.info("list request from: " + ip);
+
+        Page<Poll> polls = pollService.listAllByPage(pageable, filter, ip);
         return new ResponseEntity(polls, HttpStatus.OK);
     }
 
@@ -65,10 +71,13 @@ public class PollsController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity showPoll(@PathVariable("id") String id) {
+    public ResponseEntity showPoll(HttpServletRequest request,
+                                   @PathVariable("id") String id) {
+        String ip = request.getRemoteAddr();
+        log.info("show request from: " + ip);
 
         try {
-            Poll poll = pollService.getById(id);
+            Poll poll = pollService.getById(id, ip);
             return new ResponseEntity(poll, HttpStatus.OK);
         } catch (PollNotFoundException ex) {
             ErrorResponse err = new ErrorResponse(404, ex.getMessage());
@@ -83,10 +92,11 @@ public class PollsController {
     public ResponseEntity vote(HttpServletRequest request,
                                @PathVariable("id") String id,
                                @RequestParam(value = "vote", required = true) Set<Integer> indexes) {
-        log.info("vote request from: " + request.getRemoteAddr());
+        String ip = request.getRemoteAddr();
+        log.info("vote request from: " + ip);
 
         try {
-            Poll poll = pollService.vote(id, indexes);
+            Poll poll = pollService.vote(id, indexes, ip);
             return new ResponseEntity(poll, HttpStatus.OK);
         } catch (PollNotFoundException ex) {
             ErrorResponse err = new ErrorResponse(404, ex.getMessage());

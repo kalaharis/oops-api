@@ -36,11 +36,6 @@ public class CreatePollRequestHandler {
         return options;
     }
 
-    public static Set<String> getTagsFromRequest(CreatePollRequest req) throws ServiceException {
-        Set<String> tags = req.getTags();
-        return tags;
-    }
-
     public static Date getExpireDateFromRequest(CreatePollRequest req) throws ServiceException {
         Date expireDate = ParametersHandler.getDateFromString(req.getExpireDate());
         return expireDate;

@@ -142,6 +142,7 @@ public class CreatePollApiTests {
         Poll poll = response.getBody();
 
         Assert.assertNotNull(poll.getPublicId());
+        Assert.assertNull(poll.getVotedIps());
         Assert.assertFalse(poll.getPublicId().isEmpty());
         Assert.assertEquals(0, poll.getPrivateId());
     }

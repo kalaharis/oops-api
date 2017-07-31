@@ -15,11 +15,11 @@ import java.util.Set;
  */
 public interface PollService {
 
-    Page<Poll> listAllByPage(Pageable pageable, PollsFilter filter);
+    Page<Poll> listAllByPage(Pageable pageable, PollsFilter filter, String ip);
 
     Poll createPoll(CreatePollRequest request) throws ServiceException;
 
-    Poll getById(String id) throws ServiceException;
+    Poll getById(String id, String ip) throws ServiceException;
 
-    Poll vote(String id, Set<Integer> indexes) throws ServiceException;
+    Poll vote(String id, Set<Integer> indexes, String ip) throws ServiceException;
 }

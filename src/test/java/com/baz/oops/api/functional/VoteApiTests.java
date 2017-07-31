@@ -58,6 +58,7 @@ public class VoteApiTests {
 
     private Poll savedNormalPoll;
     private Poll savedMultiOptionedPoll;
+    private Poll savedSignleVotePerIpPoll;
 
 
     @Before
@@ -74,7 +75,7 @@ public class VoteApiTests {
         options.add(new Option("YES"));
         options.add(new Option("hell no"));
         CreatePollRequest createReq = new CreatePollRequest("Build the wall?", options);
-
+        createReq.setMultipleVotesIp(true);
         savedNormalPoll = pollService.createPoll(createReq);
 
         options.clear();
@@ -82,10 +83,16 @@ public class VoteApiTests {
         options.add(new Option("Blue"));
         options.add(new Option("Green"));
         options.add(new Option("White"));
-        createReq = new CreatePollRequest("Whick colors do you like", options);
+        createReq = new CreatePollRequest("Which colors do you like", options);
+        createReq.setMultipleVotesIp(true);
         createReq.setMultiOptions(true);
-
         savedMultiOptionedPoll = pollService.createPoll(createReq);
+
+        options.clear();
+        options.add(new Option("Coffee"));
+        options.add(new Option("Tea"));
+        createReq = new CreatePollRequest("Coffee or tea?", options);
+        savedSignleVotePerIpPoll = pollService.createPoll(createReq);
     }
 
     @Test
@@ -305,5 +312,48 @@ public class VoteApiTests {
 
         Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
+
+
+    @Test
+    public void voteInPoll_NoIndexesPassedWithParameter_ShouldReturn400() {
+        String existingId = savedNormalPoll.getPublicId();
+        String noIndexes = "";
+
+        UriComponents uri = UriComponentsBuilder
+                .fromHttpUrl(BASE_URL).port(port)
+                .path(context.getContextPath() + "/polls/" + existingId)
+                .queryParam("vote", noIndexes)
+                .build().encode();
+
+        ResponseEntity<Poll> response = client.exchange(
+                uri.toUri(), HttpMethod.PUT, null, Poll.class);
+
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void multipleVotesWithSameIp_MultipleVotesFromSameIpNotAllowed_ShouldReturn400() {
+        String existingId = savedSignleVotePerIpPoll.getPublicId();
+
+        UriComponents uri = UriComponentsBuilder
+                .fromHttpUrl(BASE_URL).port(port)
+                .path(context.getContextPath() + "/polls/" + existingId)
+                .queryParam("vote", OPTION_ONE_INDEX)
+                .build().encode();
+
+        ResponseEntity<Poll> firstVote = client.exchange(
+                uri.toUri(), HttpMethod.PUT, null, Poll.class);
+
+        ResponseEntity<Poll> secondVote = client.exchange(
+                uri.toUri(), HttpMethod.PUT, null, Poll.class);
+
+        Poll poll = pollsRepository.findOne(savedSignleVotePerIpPoll.getPrivateId());
+        Assert.assertNotNull(poll.getVotedIps());
+
+        Assert.assertEquals(HttpStatus.OK, firstVote.getStatusCode());
+
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, secondVote.getStatusCode());
+    }
+
 
 }

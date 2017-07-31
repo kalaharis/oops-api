@@ -26,6 +26,7 @@ public class CreatePollRequest {
     private String expireDate;
     private boolean hidden;
     private boolean multiOptions;
+    private boolean multipleVotesIp;
 
     //required minimum
     public CreatePollRequest(String name, List<Option> options) {

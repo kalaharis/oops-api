@@ -67,10 +67,10 @@ public class Poll {
     @Column(unique = true, name = "public_id")
     private String publicId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "name")
     private String name;
 
-    @Column(name = "create_date")
+    @Column(nullable = false, name = "create_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     private Date createDate;
 
@@ -82,17 +82,30 @@ public class Poll {
     @ElementCollection(targetClass = String.class)
     private Set<String> tags;
 
-    @Column(name = "multi_options")
+    @JsonIgnore
+    @Column(name = "voted_ips")
+    @ElementCollection(targetClass = String.class)
+    private Set<String> votedIps;
+
+    @JsonIgnore
+    @Column(nullable = false, name = "multi_votes_ip")
+    private boolean multipleVotesIp;
+
+    @Transient
+    @Column(nullable = false, name = "voted")
+    private boolean voted;
+
+    @Column(nullable = false, name = "multi_options")
     private boolean multiOptions;
 
-    @Column(name = "private")
-    @JsonProperty("private")
+    @JsonIgnore
+    @Column(nullable = false, name = "hidden")
     private boolean hidden;
 
-    @Column(name = "total_votes")
+    @Column(nullable = false, name = "total_votes")
     private int totalVotes;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "state")
     @Enumerated(EnumType.STRING)
     private State state;
 
@@ -123,12 +136,9 @@ public class Poll {
 
     public Poll(String name) {
         this.name = name;
-
         this.state = State.OPEN;
-        this.tags = new HashSet<>();
         this.options = new ArrayList<>();
         initCreationDate();
-
     }
 
 }

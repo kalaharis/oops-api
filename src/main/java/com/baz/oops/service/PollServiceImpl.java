@@ -3,10 +3,8 @@ package com.baz.oops.service;
 import com.baz.oops.api.JSON.CreatePollRequest;
 import com.baz.oops.api.spring.PollsFilter;
 import com.baz.oops.persistence.PollsRepository;
-import com.baz.oops.service.PollService;
 import com.baz.oops.service.crypt.Hashids;
 import com.baz.oops.service.enums.State;
-import com.baz.oops.service.exceptions.PollCreationException;
 import com.baz.oops.service.exceptions.PollNotFoundException;
 import com.baz.oops.service.exceptions.PollVotingException;
 import com.baz.oops.service.exceptions.ServiceException;
@@ -20,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -45,9 +44,9 @@ public class PollServiceImpl implements PollService {
 
     @Override
     @Transactional
-    public Page<Poll> listAllByPage(Pageable pageable, PollsFilter filter) {
+    public Page<Poll> listAllByPage(Pageable pageable, PollsFilter filter, String ip) {
         Page<Poll> pollsPage = pollsRepository.findAll(filter, pageable);
-        updatePolls(pollsPage);
+        updatePolls(pollsPage, ip);
         return pollsRepository.findAll(filter, pageable);
     }
 
@@ -57,10 +56,11 @@ public class PollServiceImpl implements PollService {
 
         Poll poll = new Poll(CreatePollRequestHandler.getNameFromRequest(request));
         poll.addOptions(CreatePollRequestHandler.getOptionsFromRequest(request));
-        poll.setTags(CreatePollRequestHandler.getTagsFromRequest(request));
+        poll.setTags(request.getTags());
         poll.setExpireDate(CreatePollRequestHandler.getExpireDateFromRequest(request));
         poll.setMultiOptions(request.isMultiOptions());
         poll.setHidden(request.isHidden());
+        poll.setMultipleVotesIp(request.isMultipleVotesIp());
 
         poll = pollsRepository.save(poll);
         if (poll == null) {
@@ -73,43 +73,49 @@ public class PollServiceImpl implements PollService {
 
     @Override
     @Transactional
-    public Poll getById(String id) throws ServiceException {
+    public Poll getById(String id, String ip) throws ServiceException {
         long privateId = getPrivateIdFromPublic(id);
         Poll poll = pollsRepository.findOne(privateId);
         if (poll == null) {
             throw new PollNotFoundException();
         }
-        if (isPollOutDated(poll)) {
+        /*if (isExpired(poll)) {
             poll = closePoll(poll);
-        }
-        return poll;
+        }*/
+        log.info(String.format(
+                "poll to update \"%s\" with ips: " + poll.getVotedIps(), poll.getName()));
+
+        return getUpdatedPoll(poll, ip);
     }
 
     @Override
     @Transactional
-    public Poll vote(String id, Set<Integer> indexes) throws ServiceException {
+    public Poll vote(String id, Set<Integer> indexes, String ip) throws ServiceException {
         if (indexes.size() == 0) {
             throw new PollVotingException("Cannot vote: no options selected");
         }
 
-        Poll poll = getById(id);
+        Poll poll = getById(id, ip);
 
-        if (poll == null) {
-            throw new PollNotFoundException();
-        }
+        log.info(String.format(
+                "poll to vote \"%s\" with ips: " + poll.getVotedIps(), poll.getName()));
 
         if (poll.getState() == State.CLOSED) {
             throw new PollVotingException("Cannot vote: poll is closed");
+        }
+
+        if (poll.isVoted()) {
+            throw new PollVotingException("Cannot vote: this ip has already voted");
         }
 
         if (!poll.isMultiOptions() && indexes.size() > 1) {
             throw new PollVotingException("Cannot vote: poll doesn't support multiple choices");
         }
 
-        return updatePollVotes(poll, indexes);
+        return updatePollVotes(poll, indexes, ip);
     }
 
-    private Poll updatePollVotes(Poll poll, Set<Integer> indexes) throws ServiceException {
+    private Poll updatePollVotes(Poll poll, Set<Integer> indexes, String ip) throws ServiceException {
         try {
             for (int indx : indexes) {
                 if (indx < 0) {
@@ -121,6 +127,9 @@ public class PollServiceImpl implements PollService {
 
             int updatedTotalVotes = poll.getTotalVotes() + 1;
             poll.setTotalVotes(updatedTotalVotes);
+            if (poll.getVotedIps() != null) {
+                poll.getVotedIps().add(ip);
+            }
         } catch (IndexOutOfBoundsException ex) {
             throw new PollVotingException("Poll doesn't have such option(s)", ex);
         }
@@ -153,10 +162,11 @@ public class PollServiceImpl implements PollService {
         return privateId;
     }
 
-    private boolean isPollOutDated(Poll poll) {
+    private boolean isExpired(Poll poll) {
         if (poll.getState() == State.CLOSED) {
             return false;
         }
+
         Date expiringDate = poll.getExpireDate();
         if (expiringDate == null) {
             return false;
@@ -169,17 +179,35 @@ public class PollServiceImpl implements PollService {
         return true;
     }
 
-    private Poll closePoll(Poll poll) {
+    /*private Poll closePoll(Poll poll) {
         poll.setState(State.CLOSED);
         return pollsRepository.save(poll);
-    }
+    }*/
 
-    private void updatePolls(Page<Poll> pollsPage) {
+    private void updatePolls(Page<Poll> pollsPage, String ip) {
         List<Poll> pollsList = pollsPage.getContent();
         for (Poll poll : pollsList) {
-            if (isPollOutDated(poll)) {
+            /*if (isExpired(poll)) {
                 closePoll(poll);
-            }
+            }*/
+            getUpdatedPoll(poll, ip);
         }
     }
+
+    private Poll getUpdatedPoll(Poll poll, String ip) {
+        if (isExpired(poll)) {
+            poll.setState(State.CLOSED);
+        }
+
+        Poll updatedPoll = pollsRepository.save(poll);
+
+        if (!poll.isMultipleVotesIp()) {
+            log.info(String.format(
+                    "poll \"%s\" allows only single vote per ip", poll.getName()));
+            updatedPoll.setVoted(poll.getVotedIps().contains(ip));
+        }
+
+        return updatedPoll;
+    }
+
 }
