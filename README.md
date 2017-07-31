@@ -1,5 +1,6 @@
 # Outstanding Online Poll Service(OOPS) API
-This is backend for online poll service. Its RESTful api created with [Spring Boot](https://projects.spring.io/spring-boot/). 
+This is backend RESTful api created with [Spring Boot](https://projects.spring.io/spring-boot/) 
+for [online poll service](http://176.100.17.42/oops). 
 
 * [Basics](#basics)
 * [List polls](#list-polls)
@@ -10,11 +11,17 @@ This is backend for online poll service. Its RESTful api created with [Spring Bo
 * [Sorting](#sorting)
 
 ## Basics
-* All requests and responses are in JSON format.
-* Dates using ISO 8601. Date format: "yyyy-mm-ddThh:mm:ssZ" 
+#### Request and response body
+All requests and responses using JSON format.
+#### Date format
+Dates using [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) 
+and [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) standards.  
+Example: "2017-07-31T13:01:20Z" 
 
-Base url:
->http://host/api 
+#### Base url:
+Hosted at my home server
+>176.100.17.42:8080/api/
+
 ## List polls
 `GET /polls`
 #### Parameters

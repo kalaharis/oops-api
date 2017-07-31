@@ -52,7 +52,7 @@ public class PollsController {
         String ip = request.getRemoteAddr();
         log.info("list request from: " + ip);
 
-        Page<Poll> polls = pollService.listAllByPage(pageable, filter, ip);
+        Page<Poll> polls = pollService.listAllByPage(pageable, filter);
         return new ResponseEntity(polls, HttpStatus.OK);
     }
 
@@ -77,7 +77,7 @@ public class PollsController {
         log.info("show request from: " + ip);
 
         try {
-            Poll poll = pollService.getById(id, ip);
+            Poll poll = pollService.getById(id);
             return new ResponseEntity(poll, HttpStatus.OK);
         } catch (PollNotFoundException ex) {
             ErrorResponse err = new ErrorResponse(404, ex.getMessage());

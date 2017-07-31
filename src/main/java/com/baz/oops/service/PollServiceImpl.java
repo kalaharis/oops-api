@@ -43,9 +43,9 @@ public class PollServiceImpl implements PollService {
 
     @Override
     @Transactional
-    public Page<Poll> listAllByPage(Pageable pageable, PollsFilter filter, String ip) {
+    public Page<Poll> listAllByPage(Pageable pageable, PollsFilter filter) {
         Page<Poll> pollsPage = pollsRepository.findAll(filter, pageable);
-        updatePolls(pollsPage, ip);
+        updatePolls(pollsPage);
         return pollsRepository.findAll(filter, pageable);
     }
 
@@ -72,7 +72,7 @@ public class PollServiceImpl implements PollService {
 
     @Override
     @Transactional
-    public Poll getById(String id, String ip) throws ServiceException {
+    public Poll getById(String id) throws ServiceException {
         long privateId = getPrivateIdFromPublic(id);
         Poll poll = pollsRepository.findOne(privateId);
         if (poll == null) {
@@ -88,7 +88,7 @@ public class PollServiceImpl implements PollService {
             throw new PollVotingException("Cannot vote: no options selected");
         }
 
-        Poll poll = getById(id, ip);
+        Poll poll = getById(id);
         if (poll.getState() == State.CLOSED) {
             throw new PollVotingException("Cannot vote: poll is closed");
         }
@@ -162,7 +162,7 @@ public class PollServiceImpl implements PollService {
         return true;
     }
 
-    private void updatePolls(Page<Poll> pollsPage, String ip) {
+    private void updatePolls(Page<Poll> pollsPage) {
         List<Poll> pollsList = pollsPage.getContent();
         for (Poll poll : pollsList) {
             updatePoll(poll);
